@@ -1,7 +1,9 @@
 const Category = require('../models/Category');
+const { ensureDefaultInventory } = require('../utils/defaultInventory');
 
 const getCategories = async (req, res) => {
   try {
+    await ensureDefaultInventory(req.user._id);
     const categories = await Category.find({ createdBy: req.user._id }).sort({ name: 1 });
     res.json(categories);
   } catch (err) {

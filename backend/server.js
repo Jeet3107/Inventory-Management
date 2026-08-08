@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const Category = require("./models/Category");
+const Product = require("./models/Product");
 
 dotenv.config();
 
@@ -50,8 +52,10 @@ app.get("/api/health", (req, res) => {
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB Connected");
+    await Promise.all([Category.syncIndexes(), Product.syncIndexes()]);
+    console.log("Database indexes synced");
 
     app.listen(process.env.PORT || 5000, () =>
       console.log(`Server running on port ${process.env.PORT || 5000}`),

@@ -21,7 +21,7 @@ const ProductsPage = () => {
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await productAPI.getAll({ search, category: filterCategory, status: filterStatus, page, limit: 10 });
+      const { data } = await productAPI.getAll({ search, category: filterCategory, status: filterStatus, page, limit: 25 });
       setProducts(data.products);
       setTotalPages(data.pages);
     } catch (err) {

@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const { ensureDefaultInventory } = require('../utils/defaultInventory');
 
 const sanitizeSkuPart = (value) =>
   String(value || 'ITEM')
@@ -43,6 +44,7 @@ const buildProductPayload = (body, userId, existingProduct) => {
 // GET all products
 const getProducts = async (req, res) => {
   try {
+    await ensureDefaultInventory(req.user._id);
     const { search, category, status, page = 1, limit = 10 } = req.query;
     const query = { createdBy: req.user._id };
     if (search) {
