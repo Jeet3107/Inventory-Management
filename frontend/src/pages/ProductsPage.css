@@ -1,0 +1,4 @@
+.page-title { font-size: 24px; font-weight: 700; color: #1e1b4b; }
+.filters { display: flex; gap: 12px; flex-wrap: wrap; }
+.filters .form-control { flex: 1; min-width: 160px; }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f3f4f6; }
