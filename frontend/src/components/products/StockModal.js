@@ -5,14 +5,27 @@ import './Modal.css';
 
 const StockModal = ({ product, onClose, onSaved }) => {
   const [operation, setOperation] = useState('add');
-  const [quantity, setQuantity] = useState(1);
+  const [bags, setBags] = useState('');
+  const [looseQuantity, setLooseQuantity] = useState('');
   const [loading, setLoading] = useState(false);
+  const unit = product.unit || 'units';
+  const packSize = Number(product.packSize || 0);
+  const totalQuantity = Number(((Number(bags || 0) * packSize) + Number(looseQuantity || 0)).toFixed(2));
+  const packText = product.packSize
+    ? unit === 'nos' || unit === 'pcs'
+      ? `${product.packSize} ${unit}/bag`
+      : `${product.packSize} kg/bag`
+    : '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (totalQuantity <= 0) {
+      toast.error('Enter bags or loose quantity');
+      return;
+    }
     setLoading(true);
     try {
-      await productAPI.updateStock(product._id, { quantity: Number(quantity), operation });
+      await productAPI.updateStock(product._id, { quantity: totalQuantity, operation });
       toast.success('Stock updated!');
       onSaved();
     } catch (err) {
@@ -32,8 +45,9 @@ const StockModal = ({ product, onClose, onSaved }) => {
         <form onSubmit={handleSubmit} className="modal-body">
           <div className="stock-info">
             <strong>{product.name}</strong>
-            <span>Current: <b>{product.quantity}</b> units</span>
+            <span>Current: <b>{product.quantity}</b> {unit}</span>
           </div>
+          {packText && <div className="field-hint stock-hint">Pack size: {packText}</div>}
           <div className="form-group">
             <label>Operation</label>
             <select className="form-control" value={operation} onChange={(e) => setOperation(e.target.value)}>
@@ -43,10 +57,16 @@ const StockModal = ({ product, onClose, onSaved }) => {
             </select>
           </div>
           <div className="form-group">
-            <label>Quantity</label>
-            <input className="form-control" type="number" value={quantity}
-              onChange={(e) => setQuantity(e.target.value)} min="0" required />
+            <label>Bags</label>
+            <input className="form-control" type="number" value={bags}
+              onChange={(e) => setBags(e.target.value)} min="0" placeholder="e.g. 2" />
           </div>
+          <div className="form-group">
+            <label>{unit === 'nos' || unit === 'pcs' ? 'Loose Pieces' : 'Loose / Chutak'} ({unit})</label>
+            <input className="form-control" type="number" value={looseQuantity}
+              onChange={(e) => setLooseQuantity(e.target.value)} min="0" placeholder="e.g. 25" />
+          </div>
+          <div className="stock-total">Total: {totalQuantity} {unit}</div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={loading}>

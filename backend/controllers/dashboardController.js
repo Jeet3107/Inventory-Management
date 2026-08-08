@@ -5,27 +5,36 @@ const getDashboardStats = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const totalProducts = await Product.countDocuments({ createdBy: userId });
-    const activeProducts = await Product.countDocuments({ status: 'active', createdBy: userId });
-    const lowStockProducts = await Product.find({
-      $expr: { $lte: ['$quantity', '$lowStockThreshold'] },
-      status: 'active',
-      createdBy: userId,
-    }).populate('category', 'name').limit(10);
-
-    const totalCategories = await Category.countDocuments({ createdBy: userId });
-
-    const inventoryValue = await Product.aggregate([
-      { $match: { createdBy: userId } },
-      { $group: { _id: null, total: { $sum: { $multiply: ['$quantity', '$costPrice'] } } } },
-    ]);
-
-    const categoryBreakdown = await Product.aggregate([
-      { $match: { createdBy: userId } },
-      { $group: { _id: '$category', count: { $sum: 1 }, totalStock: { $sum: '$quantity' } } },
-      { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'category' } },
-      { $unwind: '$category' },
-      { $project: { name: '$category.name', count: 1, totalStock: 1 } },
+    const [
+      totalProducts,
+      activeProducts,
+      lowStockProducts,
+      totalCategories,
+      inventoryValue,
+      categoryBreakdown,
+    ] = await Promise.all([
+      Product.countDocuments({ createdBy: userId }),
+      Product.countDocuments({ status: 'active', createdBy: userId }),
+      Product.find({
+        $expr: { $lte: ['$quantity', '$lowStockThreshold'] },
+        status: 'active',
+        createdBy: userId,
+      })
+        .select('name category quantity unit lowStockThreshold')
+        .populate('category', 'name')
+        .limit(10),
+      Category.countDocuments({ createdBy: userId }),
+      Product.aggregate([
+        { $match: { createdBy: userId } },
+        { $group: { _id: null, total: { $sum: { $multiply: ['$quantity', { $ifNull: ['$costPrice', 0] }] } } } },
+      ]),
+      Product.aggregate([
+        { $match: { createdBy: userId } },
+        { $group: { _id: '$category', count: { $sum: 1 }, totalStock: { $sum: '$quantity' } } },
+        { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'category' } },
+        { $unwind: '$category' },
+        { $project: { name: '$category.name', count: 1, totalStock: 1 } },
+      ]),
     ]);
 
     res.json({

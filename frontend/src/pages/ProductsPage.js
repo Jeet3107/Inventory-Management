@@ -52,6 +52,14 @@ const ProductsPage = () => {
     return <span className={`badge ${map[s] || 'badge-gray'}`}>{s}</span>;
   };
 
+  const money = (value) => (value == null ? '-' : `₹${Number(value).toLocaleString()}`);
+  const packLabel = (product) => {
+    if (!product.packSize) return '-';
+    return product.unit === 'nos' || product.unit === 'pcs'
+      ? `${product.packSize} ${product.unit}/bag`
+      : `${product.packSize} kg/bag`;
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -82,28 +90,32 @@ const ProductsPage = () => {
             <table>
               <thead>
                 <tr>
-                  <th>SKU</th><th>Name</th><th>Category</th>
-                  <th>Price</th><th>Cost</th><th>Stock</th><th>Status</th><th>Actions</th>
+                  <th>SKU</th><th>Name</th><th>Category</th><th>Type / Size</th>
+                  <th>Unit</th><th>Bag Size</th><th>Price</th><th>Cost</th><th>Stock</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {products.length === 0 ? (
-                  <tr><td colSpan="10" className="text-center text-muted" style={{ padding: 30 }}>No products found</td></tr>
+                  <tr><td colSpan="11" className="text-center text-muted" style={{ padding: 30 }}>No products found</td></tr>
                 ) : products.map((p) => (
                   <tr key={p._id}>
-                    <td data-label="SKU"><code>{p.sku}</code></td>
+                    <td data-label="SKU"><code>{p.sku || '-'}</code></td>
                     <td data-label="Name">
                       <div style={{ fontWeight: 500 }}>{p.name}</div>
                       {p.isLowStock && <span className="badge badge-danger" style={{ fontSize: 11 }}>Low Stock</span>}
                     </td>
-                    <td data-label="Type" style={{ textTransform: 'capitalize' }}>{p.type}</td>
-                    <td data-label="Size">{p.size || '-'}</td>
-                    <td data-label="Unit">{p.unit}</td>
-                    <td data-label="Price">₹{p.price?.toLocaleString()}</td>
-                    <td data-label="Cost">₹{p.costPrice?.toLocaleString()}</td>
+                    <td data-label="Category">{p.category?.name || '-'}</td>
+                    <td data-label="Type / Size">
+                      <div style={{ textTransform: 'capitalize' }}>{p.type || '-'}</div>
+                      <div className="text-sm text-muted">{p.size || '-'}</div>
+                    </td>
+                    <td data-label="Unit">{p.unit || '-'}</td>
+                    <td data-label="Bag Size">{packLabel(p)}</td>
+                    <td data-label="Price">{money(p.price)}</td>
+                    <td data-label="Cost">{money(p.costPrice)}</td>
                     <td data-label="Stock">
                       <span style={{ fontWeight: 600, color: p.quantity <= p.lowStockThreshold ? '#ef4444' : '#22c55e' }}>
-                        {p.quantity}
+                        {p.quantity} {p.unit || ''}
                       </span>
                     </td>
                     <td data-label="Status">{statusBadge(p.status)}</td>

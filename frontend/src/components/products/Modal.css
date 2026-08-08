@@ -21,6 +21,9 @@
 .modal-body { padding: 24px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field-hint { color: #6b7280; font-size: 12px; margin-top: 6px; }
+.stock-hint { margin: -12px 0 16px; }
+.stock-total { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; color: #3730a3; font-size: 14px; font-weight: 600; margin-bottom: 16px; padding: 10px 12px; }
 @media (max-width: 480px) {
   .form-row { grid-template-columns: 1fr; }
   .modal-body { padding: 16px; }
