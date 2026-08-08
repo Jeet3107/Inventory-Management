@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { dashboardAPI } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import './DashboardPage.css';
@@ -15,21 +16,54 @@ const StatCard = ({ icon, label, value, color }) => (
 
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6'];
 
-const DashboardPage = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+const DEFAULT_STATS = {
+  totalProducts: 0,
+  activeProducts: 0,
+  totalCategories: 0,
+  lowStockCount: 0,
+  lowStockProducts: [],
+  inventoryValue: 0,
+  categoryBreakdown: [],
+};
 
-  useEffect(() => {
-    dashboardAPI.getStats()
-      .then(({ data }) => setStats(data))
-      .finally(() => setLoading(false));
+const DashboardPage = () => {
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const { data } = await dashboardAPI.getStats();
+      setStats({ ...DEFAULT_STATS, ...data });
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to load dashboard stats';
+      setError(message);
+      setStats(DEFAULT_STATS);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
 
   if (loading) return <div className="loading">Loading dashboard...</div>;
 
   return (
     <div className="dashboard">
       <h1 className="page-title">Dashboard</h1>
+
+      {error && (
+        <div className="dashboard-error">
+          <div>
+            <strong>Dashboard data could not be loaded.</strong>
+            <p>{error}</p>
+          </div>
+          <button className="btn btn-secondary" onClick={fetchStats}>Retry</button>
+        </div>
+      )}
 
       <div className="stats-grid">
         <StatCard icon="📦" label="Total Products" value={stats.totalProducts} color="#4f46e5" />
