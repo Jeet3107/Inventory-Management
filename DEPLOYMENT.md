@@ -33,7 +33,7 @@ Use the repo root as the Vercel project root. The root `vercel.json` handles the
 The React app uses:
 
 ```env
-REACT_APP_API_URL=https://inventory-management-backend-t0ob.onrender.com/api
+REACT_APP_API_URL=https://inventory-management-backend-to0b.onrender.com/api
 ```
 
 If your Render backend URL is different, update this value in:

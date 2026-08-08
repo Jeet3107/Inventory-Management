@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
-  "https://inventory-management-backend-t0ob.onrender.com/api";
+  "https://inventory-management-backend-to0b.onrender.com/api";
 
 const API = axios.create({
   baseURL: API_BASE_URL,
